@@ -2,11 +2,15 @@
 
 namespace Modules\Admin\Http\Controllers;
 
+use App\Exports\ProductExport;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\Admin\Http\Requests\ProductRequest;
 use Modules\Admin\Models\Category;
 use Modules\Admin\Models\Product;
+use Maatwebsite\Excel\Facades\Excel;
+use Modules\Admin\Jobs\ImportProductsJob;
+use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
@@ -68,7 +72,7 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
-         $categories = Category::all();
+        $categories = Category::all();
         return view('admin::products.edit', compact('product', 'categories'));
     }
 
@@ -79,11 +83,11 @@ class ProductController extends Controller
     {
         $imageName = $product->image;
 
-        if($request->hasfile('image')){
-            if(file_exists(public_path($product->image_path))){
+        if ($request->hasfile('image')) {
+            if (file_exists(public_path($product->image_path))) {
                 unlink(public_path($product->image_path));
             }
-            $imageName=time().'.'.$request->file('image')->getClientOriginalExtension();
+            $imageName = time() . '.' . $request->file('image')->getClientOriginalExtension();
             $request->file('image')->move(public_path('storage/products'), $imageName);
 
         }
@@ -108,6 +112,31 @@ class ProductController extends Controller
     {
         $product->delete();
         return redirect()->route('dashboard.products.index')->with("status", "Product Deleted Successfully");
-    
+
     }
+
+    public function export()
+    {
+        return Excel::download(new ProductExport, 'products.xlsx');
+    }
+
+    public function import(Request $request)
+{
+    $request->validate([
+        'file' => 'required|mimes:xlsx,csv|max:5120' // 5MB max
+    ]);
+
+    try {
+        // Store in a permanent location first
+        $path = $request->file('file')->store('product_imports');
+        
+        // Add delay to ensure file is fully stored
+        ImportProductsJob::dispatch($path)->delay(now()->addSeconds(5));
+        
+        return back()->with('status', 'Import started. You will be notified when completed.');
+        
+    } catch (\Exception $e) {
+        return back()->with('error', 'Error: ' . $e->getMessage());
+    }
+}
 }

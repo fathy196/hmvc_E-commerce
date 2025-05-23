@@ -8,14 +8,27 @@
             <h1 class="display-4 text-primary fw-bold">Product Management</h1>
             <p class="text-primary">Manage your products easily from here.</p>
         </div>
-
+        
         <!-- Products Section -->
         <div class="card shadow-sm mb-5">
             <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                 <h2 class="mb-0">Products</h2>
-                <button class="btn btn-light btn-sm" onclick="window.location.href='{{ route('dashboard.products.create') }}'">
-                    <i class="bi bi-plus-circle"></i> Add Product
-                </button>
+                <div>
+                    <form action="{{ route('dashboard.products.import') }}" method="POST" enctype="multipart/form-data" class="d-inline me-2">
+                        @csrf
+                        <input type="file" name="file" class="form-control d-inline-block" style="width: auto;" required>
+                        <button type="submit" class="btn btn-warning d-inline-block text-white">
+                            <i class="bi bi-upload"></i> Import
+                        </button>
+                    </form>
+                    <a href="{{ route('dashboard.products.export') }}" class="btn btn-success d-inline-block">
+                        <i class="bi bi-download"></i> Export
+                    </a>
+                    <button class="btn btn-light btn-sm ms-2"
+                        onclick="window.location.href='{{ route('dashboard.products.create') }}'">
+                        <i class="bi bi-plus-circle"></i> Add Product
+                    </button>
+                </div>
             </div>
             <div class="card-body">
                 <!-- Product List or Message -->
@@ -38,10 +51,11 @@
                                 <div class="row">
                                     @foreach ($products as $product)
                                         <tr>
-                                            <td>{{ $loop->iteration + ($products->currentPage() - 1) * $products->perPage() }}</td>
+                                            <td>{{ $loop->iteration + ($products->currentPage() - 1) * $products->perPage() }}
+                                            </td>
                                             <td>{{ $product->name }}</td>
-                                            <td>{{ substr($product->description,0,15 )}}...</td>
-                                            <td>{{ number_format($product->price)}}</td>
+                                            <td>{{ substr($product->description, 0, 15) }}...</td>
+                                            <td>{{ number_format($product->price) }}</td>
                                             <td>{{ $product->quantity }}</td>
                                             <td>{{ $product->is_active_status }}</td>
                                             <td>{{ $product->category->name }}</td>
@@ -71,11 +85,10 @@
             <p class="text-center">No products found.</p>
             @endif
         </div>
-    {{-- </div> --}}
+        {{-- </div> --}}
 
+        <!-- Categories Section -->
 
-    <!-- Categories Section -->
-   
-    {{$products->links() }}
+        {{ $products->links() }}
 
-@endsection
+    @endsection
