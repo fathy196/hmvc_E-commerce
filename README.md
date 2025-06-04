@@ -1,7 +1,6 @@
 # 🧠 Laravel HMVC E-commerce Backend Assessment
 
-This project demonstrates a modular **Laravel 12** backend system using the **HMVC (Hierarchical Model View Controller)** architecture via [`nwidart/laravel-modules`](https://github.com/nWidart/laravel-modules).
-
+This project demonstrates a modular **Laravel 12** backend system using the **HMVC (Hierarchical Model View Controller)**
 ---
 
 ## 🔧 Features
